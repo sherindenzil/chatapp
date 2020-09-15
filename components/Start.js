@@ -88,6 +88,10 @@ export default class SplashScreen extends React.Component {
           <View style={styles.chatButton}>
             {/* creating button with no default styles to have more freedom to style */}
             <TouchableOpacity
+              accessible={true}
+              accessibilityLabel="More options"
+              accessibilityHint="Lets you choose to send an image or your geolocation."
+              accessibilityRole="button"
               // giving button ability to navigate when pressed. Note within leading tag
               onPress={() =>
                 this.props.navigation.navigate("ChatScreen", {
