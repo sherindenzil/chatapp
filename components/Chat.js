@@ -1,10 +1,15 @@
 import React, { Component } from "react";
-import { View, StyleSheet, Text } from "react-native";
+import { View, StyleSheet, Text, AsyncStorage } from "react-native";
 
-import { GiftedChat, Bubble, InputToolbar } from "react-native-gifted-chat";
-import AsyncStorage from "@react-native-community/async-storage";
+import { GiftedChat, InputToolbar, Bubble } from "react-native-gifted-chat";
 
 import NetInfo from "@react-native-community/netinfo";
+
+import CustomActions from "./CustomActions.js";
+
+import MapView from "react-native-maps";
+
+//import Config from "./Config";
 
 // import firestore/firebase
 const firebase = require("firebase");
@@ -22,9 +27,10 @@ export default class Chat extends Component {
       },
       loggedInText: "",
       isConnected: false,
-      //image: null,
-      //location: null,
+      image: null,
+      location: null,
     };
+
     //connect to firestore
     if (!firebase.apps.length) {
       firebase.initializeApp({
@@ -41,7 +47,6 @@ export default class Chat extends Component {
 
     // reference to messages collection
     this.referenceMessages = firebase.firestore().collection("messages");
-    this.referenceShoppinglistUser = null;
   }
 
   //authenticates the user, sets the state to sned messages and gets past messages
@@ -58,7 +63,6 @@ export default class Chat extends Component {
                 console.log(`Unable to sign in: ${error.message}`);
               }
             }
-
             this.setState({
               isConnected: true,
               user: {
@@ -66,7 +70,7 @@ export default class Chat extends Component {
                 name: this.props.route.params.name,
                 avatar: "https://placeimg.com/140/140/any",
               },
-              loggedInText: `${this.props.route.params.name} has entered the chat`,
+              loggedInText: `${this.props.route.params.name} has entered  the chat`,
               messages: [],
             });
             this.unsubscribe = this.referenceMessages
@@ -84,14 +88,11 @@ export default class Chat extends Component {
 
   componentWillUnmount() {
     if (this.state.isConnected) {
-      //stop listening to authentication
       this.authUnsubscribe();
-      //stop listening to changes
       this.unsubscribe();
     }
   }
 
-  //Sends messages
   onSend(messages = []) {
     this.setState(
       (previousState) => ({
@@ -119,8 +120,8 @@ export default class Chat extends Component {
           name: data.user.name,
           avatar: data.user.avatar,
         },
-        //image: data.image || "",
-        //location: data.location,
+        image: data.image || "",
+        location: data.location,
       });
     });
     this.setState({
@@ -135,8 +136,8 @@ export default class Chat extends Component {
       text: message.text || "",
       createdAt: message.createdAt,
       user: message.user,
-      //image: message.image || "",
-      //location: message.location || null,
+      image: message.image || "",
+      location: message.location || null,
       sent: true,
     });
   };
@@ -192,6 +193,35 @@ export default class Chat extends Component {
     );
   }
 
+  renderCustomActions = (props) => {
+    return <CustomActions {...props} />;
+  };
+
+  renderCustomView(props) {
+    const { currentMessage } = props;
+    if (currentMessage.location) {
+      return (
+        <View>
+          <MapView
+            style={{
+              width: 150,
+              height: 100,
+              borderRadius: 13,
+              margin: 3,
+            }}
+            region={{
+              latitude: currentMessage.location.latitude,
+              longitude: currentMessage.location.longitude,
+              latitudeDelta: 0.0922,
+              longitudeDelta: 0.0421,
+            }}
+          />
+        </View>
+      );
+    }
+    return null;
+  }
+
   render() {
     //Get seleceted background color
     let bcolor = this.props.route.params.color;
@@ -199,7 +229,7 @@ export default class Chat extends Component {
     //Get selected user name
     let name = this.props.route.params.name;
 
-    //Set title to username
+    //Set title to usernam
     this.props.navigation.setOptions({ title: name });
 
     return (
@@ -213,8 +243,10 @@ export default class Chat extends Component {
         <Text>{this.state.loggedInText}</Text>
 
         <GiftedChat
-          renderInputToolbar={this.renderInputToolbar}
+          renderCustomView={this.renderCustomView}
           renderBubble={this.renderBubble.bind(this)}
+          renderInputToolbar={this.renderInputToolbar}
+          renderActions={this.renderCustomActions}
           messages={this.state.messages}
           onSend={(messages) => this.onSend(messages)}
           user={this.state.user}
@@ -223,13 +255,3 @@ export default class Chat extends Component {
     );
   }
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#fff",
-    alignItems: "center",
-    justifyContent: "center",
-    width: "100%",
-  },
-});
