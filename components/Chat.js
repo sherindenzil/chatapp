@@ -93,6 +93,14 @@ export default class Chat extends Component {
     }
   }
 
+  /**
+   * Sends messages
+   * @async
+   * @function onSend
+   * @param {string} messages
+   * @return {state} GiftedChat
+   */
+
   onSend(messages = []) {
     this.setState(
       (previousState) => ({
@@ -104,6 +112,17 @@ export default class Chat extends Component {
       }
     );
   }
+
+  /**
+   * Update message state with recent data
+   * @function onCollectionUpdate
+   * @param {string} _id - message id
+   * @param {string} text - content
+   * @param {date} cratedAt - date and time sent
+   * @param {string} user - user data
+   * @param {string} image - image sent
+   * @param {number} location - geographical coordinates
+   */
 
   onCollectionUpdate = (querySnapshot) => {
     const messages = [];
@@ -129,6 +148,17 @@ export default class Chat extends Component {
     });
   };
 
+  /**
+   * Pushes messages to Firestore database
+   * @function addMessages
+   * @param {string} _id - message id
+   * @param {string} text - message content
+   * @param {date} cratedAt - date and time of message
+   * @param {string} image
+   * @param {number} location - geographical coordinates
+   * @param {boolean} sent
+   */
+
   addMessages = () => {
     const message = this.state.messages[0];
     this.referenceMessages.add({
@@ -142,6 +172,14 @@ export default class Chat extends Component {
     });
   };
 
+  /**
+   * loads all messages from AsyncStorage
+   * @async
+   * @function getMessages
+   * @param {string} messages
+   * @return {state} messages
+   */
+
   getMessages = async () => {
     let messages = [];
     try {
@@ -154,6 +192,14 @@ export default class Chat extends Component {
     }
   };
 
+  /**
+   * Saves messages to AsyncStorage
+   * @async
+   * @function saveMessages
+   * @param {string} messages
+   * @return {AsyncStorage}
+   */
+
   saveMessages = async () => {
     try {
       await AsyncStorage.setItem(
@@ -165,6 +211,14 @@ export default class Chat extends Component {
     }
   };
 
+  /**
+   * Deletes messages from AsyncStorage
+   * @async
+   * @function deleteMessages
+   * @param {string} messages
+   * @return {AsyncStorage}
+   */
+
   deleteMessages = async () => {
     try {
       await AsyncStorage.removeItem("messages");
@@ -172,6 +226,13 @@ export default class Chat extends Component {
       console.log(error.message);
     }
   };
+
+  /**
+   * Renders input toolbar only if online
+   * @function renderInputToolbar
+   * @param {*} props
+   * @returns {InputToolbar}
+   */
 
   renderInputToolbar = (props) => {
     if (this.state.isConnected == false) {
@@ -193,9 +254,23 @@ export default class Chat extends Component {
     );
   }
 
+  /**
+   * Renders upload image, take photo and share location options
+   * @function renderCustomActions
+   * @param {*} props
+   * @returns {CustomActions}
+   */
+
   renderCustomActions = (props) => {
     return <CustomActions {...props} />;
   };
+
+  /**
+   * if currentMessage has location coords then mapview is returned
+   * @function renderCustomView
+   * @param {*} props
+   * @returns {MapView}
+   */
 
   renderCustomView(props) {
     const { currentMessage } = props;
